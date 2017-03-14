@@ -1,82 +1,79 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.gcsc.vrl.slg;
 
 import eu.mihosoft.vrl.system.InitPluginAPI;
 import eu.mihosoft.vrl.system.PluginAPI;
+import eu.mihosoft.vrl.system.PluginDependency;
 import eu.mihosoft.vrl.system.PluginIdentifier;
 import eu.mihosoft.vrl.system.VPluginAPI;
 import eu.mihosoft.vrl.system.VPluginConfigurator;
-
-
+import eu.mihosoft.vrl.visual.VFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
- *
- * @author Michael Hoffer <info@michaelhoffer.de>
+ * @brief SkinLayerGeneratorPluginConfigurator
+ * @author stephanmg <stephan@syntaktischer-zucker.de>
  */
-public class SkinLayerGeneratorPluginConfigurator extends VPluginConfigurator{
+public class SkinLayerGeneratorPluginConfigurator extends VPluginConfigurator {
 
-    public SkinLayerGeneratorPluginConfigurator() {
-        //specify the plugin name and version
-       setIdentifier(new PluginIdentifier("Tutorial-Plugin01", "0.1"));
+	public SkinLayerGeneratorPluginConfigurator() {
+		setIdentifier(new PluginIdentifier("VRL-SkinLayerGenerator-Plugin", "0.1"));
+		setDescription("Generates vertical skin sections");
+		setCopyrightInfo("VRL-SkinLayerGenerator-Plugin",
+			"(c) stephanmg",
+			"http://neurobox.eu", "LGPLv3", "");
 
-       // optionally allow other plugins to use the api of this plugin
-       // you can specify packages that shall be
-       // exported by using the exportPackage() method:
-       //
-       // exportPackage("com.your.package");
+		addDependency(new PluginDependency("VRL", "0.4.3", "0.4.3"));
+		addDependency(new PluginDependency("VRL-UG", "0.2", "0.2"));
+		addDependency(new PluginDependency("VRL-UG-API", "0.2", "0.2"));
+	}
 
-       // describe the plugin
-       setDescription("Plugin Description");
+	@Override
+	public void register(PluginAPI api) {
 
-       // copyright info
-       setCopyrightInfo("Sample-Plugin",
-               "(c) Your Name",
-               "www.you.com", "License Name", "License Text...");
+		// register plugin with canvas
+		if (api instanceof VPluginAPI) {
+			VPluginAPI vapi = (VPluginAPI) api;
+			vapi.addComponent(SkinLayerGeneratorComponent.class);
+			vapi.addComponentSearchFilter(new HideComponentFilter());
+		}
+	}
 
-       // specify dependencies
-       // addDependency(new PluginDependency("VRL", "0.4.0", "0.4.0"));
-    }
-    
-    @Override
-    public void register(PluginAPI api) {
+	@Override
+	public void unregister(PluginAPI api) {
+	}
 
-       // register plugin with canvas
-       if (api instanceof VPluginAPI) {
-           VPluginAPI vapi = (VPluginAPI) api;
+	@Override
+	public void init(InitPluginAPI iApi) {
+	}
 
-           // Register visual components:
-           //
-           // Here you can add additional components,
-           // type representations, styles etc.
-           //
-           // ** NOTE **
-           //
-           // To ensure compatibility with future versions of VRL,
-           // you should only use the vapi or api object for registration.
-           // If you directly use the canvas or its properties, please make
-           // sure that you specify the VRL versions you are compatible with
-           // in the constructor of this plugin configurator because the
-           // internal api is likely to change.
-           //
-           // examples:
-           //
-           // vapi.addComponent(MyComponent.class);
-           // vapi.addTypeRepresentation(MyType.class);
-           
-           vapi.addComponent(SkinLayerGeneratorComponent.class);
-       }
-   }
+	class HideComponentFilter implements VFilter {
+		@Override
+		public boolean matches(Object o) {
 
-    @Override
-   public void unregister(PluginAPI api) {
-       // nothing to unregister
-   }
+			if (!(o instanceof DefaultMutableTreeNode)) {
+				return false;
+			}
 
-    @Override
-    public void init(InitPluginAPI iApi) {
-       // nothing to init
-   }
- }
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) o;
+
+			if (node.getUserObject() == null
+				|| !(node.getUserObject() instanceof Class<?>)) {
+				return false;
+			}
+
+			Class<?> cls = (Class<?>) node.getUserObject();
+
+			return cls.getName().equalsIgnoreCase("SkinLayerGenerator");
+		}
+
+		@Override
+		public String getName() {
+			return "SkinLayerGenerator's hide filter";
+		}
+
+		@Override
+		public boolean hideWhenMatching() {
+			return true;
+		}
+	}
+}

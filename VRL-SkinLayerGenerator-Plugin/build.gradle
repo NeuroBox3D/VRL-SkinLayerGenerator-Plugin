@@ -18,13 +18,6 @@ repositories {
     }
 }
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.10'
-    
-    compile (group: 'eu.mihosoft.vrl', name: 'vrl', version: '0.4.2.8.5-SNAPSHOT')
-
-}
-
 def loadProperties(String sourceFileName) {
     
     def config = new Properties()
@@ -36,6 +29,20 @@ def loadProperties(String sourceFileName) {
             ext.set(property.key, property.value)
         }
     }
+}
+
+
+
+// loads the property file
+loadProperties('build.properties')
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.10'
+    
+    compile (group: 'eu.mihosoft.vrl', name: 'vrl', version: '0.4.2.8.5-SNAPSHOT')
+   
+   compile fileTree(dir: vrldir + '/plugins', include: ['*.jar'])
+
 }
 
 // create a fat-jar (class files plus dependencies
@@ -51,8 +58,6 @@ jar {
     from files(sourceSets.main.output.classesDir)
 }
 
-// loads the property file
-loadProperties('build.properties')
 
 // compiles and installs the vrl plugin to the specified folder
 task installVRLPlugin(dependsOn: [clean,jar]) << {
